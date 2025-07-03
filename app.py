@@ -176,6 +176,41 @@ def get_receipts():
         "code.html", title="Receipts", code=info, sub_title=sub_title
     )
 
+@app.route("/bills")
+@xero_token_required
+def get_bills():
+    "Download bills attachments from 2020 to 2024 using Files API !"
+    xero_tenant_id = get_xero_tenant_id()
+    api = FilesApi(api_client)
+
+    count = 1
+    pagesize = 100 
+    for page in range(1, 26):  # page 1 == most recent files; 25 is the page that starts to have files from 2019
+        print(f"Processing page {page}")
+        all_files = api.get_files(xero_tenant_id, pagesize=pagesize, page=page)
+
+        for idx, file in enumerate(all_files.items):
+            created = datetime.datetime.fromisoformat(file.created_date_utc)
+            if created.year < 2020:
+                break
+            try:
+                assoc = api.get_file_associations(xero_tenant_id, file.id)[0]
+                if assoc.object_type.name not in ("ACCPAY", "CASHPAID"):
+                    continue
+                tmp_file = api.get_file_content(xero_tenant_id, file.id)
+                dest_file_name = f"{created.strftime("%Y-%m-%d")}_{file.name}".replace(" ", "_")
+                os.rename(tmp_file, 'bills/'+dest_file_name)
+                count += 1
+            except Exception as error:
+                print(f"*** ERROR processing file #{idx} on page {page} with ID {file.id}\n{error}")
+
+    sub_title = "Download Bills"
+    info = {"total_files": count}
+
+    return render_template(
+        "code.html", title="Bills", code=info, sub_title=sub_title
+    )
+
 
 @app.route("/login")
 def login():

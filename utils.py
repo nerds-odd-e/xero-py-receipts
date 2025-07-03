@@ -3,6 +3,7 @@ import json
 import uuid
 from datetime import datetime, date
 from decimal import Decimal
+import pickle
 
 from xero_python.api_client.serializer import serialize
 
@@ -28,3 +29,14 @@ def serialize_model(model):
 
 def jsonify(data):
     return json.dumps(data, sort_keys=True, indent=4, cls=JSONEncoder)
+
+
+def savepkl(filename, data):
+    with open(filename, 'wb') as f:
+        pickle.dump(data, f)
+
+
+def loadpkl(filename):
+    with open(filename, 'rb') as f:
+        data = pickle.load(f)
+    return data

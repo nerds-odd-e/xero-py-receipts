@@ -6,11 +6,15 @@ Note that files are only available via [Files API](https://developer.xero.com/do
 ```text
 Date: Mon, 30 Jun 2025 08:37:26 +0000 (GMT)
 From: Xero Support <api@support.xero.com>
-To: "Ivan" <ivan@odd-e.com>
+To: "Ivan"
 Subject: Xero Support - Xero API Support: receipts attachments -
 -----
 
-The attachments endpoint was created after the deprecation of the expenses endpoint and so expenses were not included in the scope of the GET or PUT/POST requests for attachments.
+The attachments endpoint was created after the deprecation of the expenses
+endpoint and so expenses were not included in the scope of the GET or PUT/POST
+requests for attachments.
 
-I have done some testing with API Explorer and an old test account that still has expenses and I was able to use the Files API to get files from Xero and these included files attached to expense claims.
+I have done some testing with API Explorer and an old test account that still
+has expenses and I was able to use the Files API to get files from Xero and
+these included files attached to expense claims.
 ```
