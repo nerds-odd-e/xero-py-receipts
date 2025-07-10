@@ -18,7 +18,7 @@ from xero_python.identity import IdentityApi
 from xero_python.utils import getvalue
 
 import logging_settings
-from utils import jsonify, serialize_model
+from utils import jsonify, serialize_model, invoice_file_name, savepkl
 
 dictConfig(logging_settings.default_settings)
 
@@ -105,16 +105,33 @@ def index():
 def get_invoices():
     xero_tenant_id = get_xero_tenant_id()
     accounting_api = AccountingApi(api_client)
-
-    invoices = accounting_api.get_invoices(
-        xero_tenant_id, 
-        if_modified_since=datetime.datetime(2014, 1, 1),
-        statuses=["PAID"],
-        page=1,
-        include_archived="True",
-    )
+    invoices = []
+    for page in range(1, 8):
+        print(f"=== Processing {page} ===")
+        resp = accounting_api.get_invoices(
+            xero_tenant_id, 
+            if_modified_since=datetime.datetime(2019, 1, 1),
+            statuses=["PAID"],
+            order='InvoiceNumber DESC',
+            page=page,
+            page_size=100,
+            include_archived="True",
+        )
+        for invoice in resp.invoices:
+            if invoice.fully_paid_on_date < datetime.date(2019, 1, 1):
+                break
+            if invoice.type != "ACCREC":
+                continue
+            try:
+                tmp_file = accounting_api.get_invoice_as_pdf(xero_tenant_id, invoice.invoice_id)
+                dest_file = invoice_file_name(invoice)
+                os.rename(tmp_file, 'invoices/'+dest_file)
+                invoices.append(invoice)
+            except Exception as e:
+                print(f"*** Error processing Invoice ID: {invoice.invoice_id}")
+    savepkl("invoices.pkl", invoices)
     code = serialize_model(invoices)
-    sub_title = "Total invoices found: {}".format(len(invoices.invoices))
+    sub_title = "Total invoices found: {}".format(len(invoices))
 
     return render_template(
         "code.html", title="Invoices", code=code, sub_title=sub_title

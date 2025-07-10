@@ -40,3 +40,10 @@ def loadpkl(filename):
     with open(filename, 'rb') as f:
         data = pickle.load(f)
     return data
+
+def invoice_file_name(invoice):
+    date = invoice.date
+    paid_date = invoice.fully_paid_on_date
+    number = invoice.invoice_number
+    amount = str(invoice.amount_paid).split('.')[0]
+    return f"{date}_{number}_{paid_date}_{amount}.pdf"
